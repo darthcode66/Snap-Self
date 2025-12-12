@@ -1,0 +1,445 @@
+// Snap-Self - Prisma Schema
+// Plataforma all-in-one para fotógrafos profissionais
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// CORE MODELS (Shared by both modes)
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String
+  role          UserRole  @default(PHOTOGRAPHER)
+
+  // Profile
+  phone         String?
+  avatar        String?
+  bio           String?
+  website       String?
+
+  // Settings
+  timezone      String    @default("America/Sao_Paulo")
+  language      String    @default("pt-BR")
+
+  // Subscription
+  plan          SubscriptionPlan @default(FREE)
+  planExpiresAt DateTime?
+
+  // Modes enabled
+  eventsMode    Boolean   @default(true)
+  schoolMode    Boolean   @default(false)
+
+  // Relations - Events Mode
+  projects      Project[]
+  galleries     Gallery[]
+  clients       Client[]
+
+  // Relations - School Mode
+  schools       School[]
+  photoSessions PhotoSession[]
+
+  // Relations - Core
+  photos        Photo[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([email])
+}
+
+enum UserRole {
+  PHOTOGRAPHER
+  CLIENT
+  ADMIN
+}
+
+enum SubscriptionPlan {
+  FREE
+  STARTER    // R$ 39/mês
+  PROFESSIONAL // R$ 89/mês
+  BUSINESS   // R$ 149/mês
+}
+
+model Photo {
+  id            String    @id @default(cuid())
+
+  // File info
+  filename      String
+  url           String
+  thumbnail     String?
+
+  // Metadata
+  size          Int       // bytes
+  width         Int
+  height        Int
+  format        String    // jpg, png, raw, etc
+  takenAt       DateTime?
+
+  // AI Analysis
+  aiAnalysis    Json?     // SmartAnalysis interface
+  tags          String[]
+  quality       Float?    // 0-100
+
+  // Categorization
+  category      String?
+
+  // Relations - Core
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Relations - Events Mode
+  projectId     String?
+  project       Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  galleryPhotos GalleryPhoto[]
+
+  // Relations - School Mode
+  studentId     String?
+  student       Student?  @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  sessionId     String?
+  session       PhotoSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([studentId])
+  @@index([sessionId])
+  @@index([takenAt])
+}
+
+// ============================================
+// EVENTS MODE (Projects, Galleries, Clients)
+// ============================================
+
+model Project {
+  id            String        @id @default(cuid())
+  title         String
+  description   String?
+  type          ProjectType
+
+  // Dates
+  eventDate     DateTime?
+  deliveryDate  DateTime?
+
+  // Status
+  status        ProjectStatus @default(PLANNING)
+
+  // Client
+  clientId      String?
+  client        Client?       @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  // Photographer
+  photographerId String
+  photographer  User          @relation(fields: [photographerId], references: [id], onDelete: Cascade)
+
+  // Relations
+  photos        Photo[]
+  galleries     Gallery[]
+
+  // Financial
+  budget        Decimal?
+  paid          Boolean       @default(false)
+  paidAmount    Decimal?
+  paidAt        DateTime?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([photographerId])
+  @@index([clientId])
+  @@index([eventDate])
+}
+
+enum ProjectType {
+  WEDDING
+  ENGAGEMENT
+  PORTRAIT
+  CORPORATE
+  EVENT
+  PRODUCT
+  OTHER
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  EDITING
+  DELIVERED
+  COMPLETED
+  CANCELLED
+}
+
+model Client {
+  id            String    @id @default(cuid())
+  name          String
+  email         String?
+  phone         String?
+
+  // Address
+  address       String?
+  city          String?
+  state         String?
+  zipCode       String?
+
+  // Photographer
+  photographerId String
+  photographer  User      @relation(fields: [photographerId], references: [id], onDelete: Cascade)
+
+  // Relations
+  projects      Project[]
+
+  // Notes
+  notes         String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([photographerId])
+  @@index([email])
+}
+
+model Gallery {
+  id            String         @id @default(cuid())
+  title         String
+  description   String?
+
+  // Settings
+  isPublic      Boolean        @default(false)
+  password      String?
+  slug          String         @unique
+  expiresAt     DateTime?
+
+  // Customization
+  coverPhotoUrl String?
+  theme         String         @default("default")
+
+  // Downloads
+  allowDownload Boolean        @default(true)
+  watermark     Boolean        @default(false)
+
+  // Project
+  projectId     String?
+  project       Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  // Photographer
+  photographerId String
+  photographer  User           @relation(fields: [photographerId], references: [id], onDelete: Cascade)
+
+  // Relations
+  photos        GalleryPhoto[]
+
+  // Stats
+  views         Int            @default(0)
+  downloads     Int            @default(0)
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([photographerId])
+  @@index([slug])
+}
+
+model GalleryPhoto {
+  id        String   @id @default(cuid())
+
+  galleryId String
+  gallery   Gallery  @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+
+  photoId   String
+  photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  order     Int      @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@unique([galleryId, photoId])
+  @@index([galleryId])
+  @@index([photoId])
+}
+
+// ============================================
+// SCHOOL MODE (Schools, Classes, Students, Sessions)
+// ============================================
+
+model School {
+  id          String    @id @default(cuid())
+  name        String
+  address     String?
+  contact     String?
+  email       String?
+  phone       String?
+
+  // Photographer
+  photographerId String
+  photographer User      @relation(fields: [photographerId], references: [id], onDelete: Cascade)
+
+  // Relations
+  classes     Class[]
+  contracts   Contract[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([photographerId])
+  @@index([name])
+}
+
+model Class {
+  id          String         @id @default(cuid())
+  name        String         // "1º Ano A"
+  grade       String         // "1º Ano"
+  section     String         // "A"
+  year        Int            // 2025
+
+  // School
+  schoolId    String
+  school      School         @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  // Relations
+  students    Student[]
+  sessions    PhotoSession[]
+
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@unique([schoolId, grade, section, year])
+  @@index([schoolId])
+}
+
+model Student {
+  id              String    @id @default(cuid())
+  name            String
+  sortName        String    // For alphabetical sorting: "Silva, Ana"
+
+  // Optional data
+  registrationNumber String?
+  birthDate       DateTime?
+  parentName      String?
+  parentContact   String?
+  parentEmail     String?
+
+  // Status
+  hasAuthorization Boolean  @default(false)
+  hasPaid          Boolean  @default(false)
+  paidAmount       Decimal?
+  paymentDate      DateTime?
+
+  // Class
+  classId         String
+  class           Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  // Relations
+  photos          Photo[]
+
+  // Notes
+  notes           String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([classId])
+  @@index([sortName])
+}
+
+model PhotoSession {
+  id              String        @id @default(cuid())
+
+  // Metadata
+  date            DateTime      @default(now())
+  location        String?
+  status          SessionStatus @default(IN_PROGRESS)
+
+  // Settings
+  photoPrefix     String        // For filename: "SAO_JOAO_1A_2025"
+  startNumber     Int           @default(1)
+  sortOrder       SortOrder     @default(ALPHABETICAL)
+  autoAdvance     Boolean       @default(true)
+
+  // Class
+  classId         String
+  class           Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  // Photographer
+  photographerId  String
+  photographer    User          @relation(fields: [photographerId], references: [id], onDelete: Cascade)
+
+  // Relations
+  photos          Photo[]
+
+  // Progress tracking
+  totalStudents   Int
+  photographed    Int           @default(0)
+  pending         Int
+  absent          Int           @default(0)
+
+  // Current student (for session control)
+  currentStudentIndex Int?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  completedAt     DateTime?
+
+  @@index([classId])
+  @@index([photographerId])
+  @@index([date])
+}
+
+enum SessionStatus {
+  SCHEDULED
+  IN_PROGRESS
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum SortOrder {
+  ALPHABETICAL
+  REGISTRATION_NUMBER
+  CUSTOM
+}
+
+model Contract {
+  id              String         @id @default(cuid())
+
+  // School
+  schoolId        String
+  school          School         @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  // Details
+  year            Int
+  totalValue      Decimal
+  packageType     String         // "Individual", "Turma", "Escola"
+  description     String?
+
+  // Dates
+  signedAt        DateTime
+  shootingDate    DateTime
+  deliveryDate    DateTime
+
+  // Status
+  status          ContractStatus @default(ACTIVE)
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([schoolId])
+  @@index([year])
+}
+
+enum ContractStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
