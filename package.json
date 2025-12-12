@@ -6,7 +6,7 @@
   "author": "Snap-Self Team",
   "license": "PROPRIETARY",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --hostname localhost",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

@@ -1,6 +1,4 @@
 import type { Metadata } from 'next';
-import { GeistSans } from 'geist/font/sans';
-import { GeistMono } from 'geist/font/mono';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -19,7 +17,6 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'Snap-Self Team' }],
   creator: 'Snap-Self',
-  metadataBase: new URL('https://snapself.com.br'),
   openGraph: {
     type: 'website',
     locale: 'pt_BR',
@@ -47,7 +44,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+    <html lang="pt-BR">
       <body className="min-h-screen bg-background font-sans antialiased">
         {children}
       </body>
