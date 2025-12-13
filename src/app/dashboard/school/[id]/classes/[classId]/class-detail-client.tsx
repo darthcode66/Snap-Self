@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, Users, Video } from 'lucide-react';
+import { ArrowLeft, Users, Video, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -142,11 +142,21 @@ export function ClassDetailClient({
               </p>
               <Button asChild>
                 <Link href={`/dashboard/school/${school.id}/classes/${classData.id}/import`}>
+                  <Upload className="mr-2 h-4 w-4" />
                   Importar Alunos
                 </Link>
               </Button>
             </div>
           ) : (
+            <div className="space-y-4">
+              <div className="flex justify-end">
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={`/dashboard/school/${school.id}/classes/${classData.id}/import`}>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Importar Mais Alunos
+                  </Link>
+                </Button>
+              </div>
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
@@ -198,6 +208,7 @@ export function ClassDetailClient({
                   ))}
                 </TableBody>
               </Table>
+            </div>
             </div>
           )}
         </CardContent>
