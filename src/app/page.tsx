@@ -74,7 +74,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4 text-center text-sm text-gray-600">
           <p>© 2025 Snap-Self. Todos os direitos reservados.</p>
           <p className="mt-2">
-            Feito com ❤️ para fotógrafos profissionais brasileiros
+            Inovação em gestão fotográfica para profissionais modernos
           </p>
         </div>
       </footer>
