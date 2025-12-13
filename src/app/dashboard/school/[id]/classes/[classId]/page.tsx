@@ -4,13 +4,14 @@ import { notFound } from 'next/navigation';
 import { ClassDetailClient } from './class-detail-client';
 
 type Props = {
-  params: {
+  params: Promise<{
     id: string;
     classId: string;
-  };
+  }>;
 };
 
 export default async function ClassDetailPage({ params }: Props) {
+  const { id, classId } = await params;
   const user = await currentUser();
 
   if (!user) {
@@ -18,7 +19,7 @@ export default async function ClassDetailPage({ params }: Props) {
   }
 
   const school = await prisma.school.findUnique({
-    where: { id: params.id },
+    where: { id },
   });
 
   if (!school || school.photographerId !== user.id) {
@@ -26,7 +27,7 @@ export default async function ClassDetailPage({ params }: Props) {
   }
 
   const classData = await prisma.class.findUnique({
-    where: { id: params.classId },
+    where: { id: classId },
     include: {
       students: {
         orderBy: { sortName: 'asc' },
@@ -37,7 +38,7 @@ export default async function ClassDetailPage({ params }: Props) {
     },
   });
 
-  if (!classData || classData.schoolId !== params.id) {
+  if (!classData || classData.schoolId !== id) {
     notFound();
   }
 

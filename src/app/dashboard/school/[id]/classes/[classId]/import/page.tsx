@@ -1,16 +1,17 @@
 import { currentUser } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
-import { ClassesClient } from './classes-client';
+import { ImportStudentsClient } from '../import-students-client';
 
 type Props = {
   params: Promise<{
     id: string;
+    classId: string;
   }>;
 };
 
-export default async function ClassesPage({ params }: Props) {
-  const { id } = await params;
+export default async function ImportStudentsPage({ params }: Props) {
+  const { id, classId } = await params;
   const user = await currentUser();
 
   if (!user) {
@@ -25,17 +26,18 @@ export default async function ClassesPage({ params }: Props) {
     notFound();
   }
 
-  const classes = await prisma.class.findMany({
-    where: { schoolId: id },
-    include: {
-      _count: {
-        select: { students: true, sessions: true },
-      },
-    },
-    orderBy: [{ grade: 'asc' }, { section: 'asc' }],
+  const classData = await prisma.class.findUnique({
+    where: { id: classId },
   });
 
+  if (!classData || classData.schoolId !== id) {
+    notFound();
+  }
+
   return (
-    <ClassesClient school={school} classes={classes} />
+    <ImportStudentsClient
+      school={school}
+      classData={classData}
+    />
   );
 }
