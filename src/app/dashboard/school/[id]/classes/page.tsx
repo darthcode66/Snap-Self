@@ -10,7 +10,8 @@ type Props = {
 };
 
 export default async function ClassesPage({ params }: Props) {
-  const { id } = await params;
+  const resolvedParams = await params;
+  const { id } = resolvedParams;
   const user = await currentUser();
 
   if (!user) {
