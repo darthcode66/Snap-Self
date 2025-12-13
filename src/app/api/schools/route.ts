@@ -48,6 +48,22 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
+    // Ensure user exists in database (sync from Clerk)
+    await prisma.user.upsert({
+      where: { id: user.id },
+      update: {
+        email: user.emailAddresses[0]?.emailAddress || '',
+        name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Fotógrafo',
+      },
+      create: {
+        id: user.id,
+        email: user.emailAddresses[0]?.emailAddress || '',
+        name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Fotógrafo',
+        passwordHash: '', // Clerk manages authentication
+        role: 'PHOTOGRAPHER',
+      },
+    });
+
     const school = await prisma.school.create({
       data: {
         name: body.name,

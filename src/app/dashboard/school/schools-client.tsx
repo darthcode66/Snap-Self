@@ -41,7 +41,6 @@ export function SchoolsClient({ schools }: SchoolsClientProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Escolas</h1>
@@ -57,7 +56,6 @@ export function SchoolsClient({ schools }: SchoolsClientProps) {
         </Link>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -88,7 +86,7 @@ export function SchoolsClient({ schools }: SchoolsClientProps) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Última adicionada
+              Ultima adicionada
             </CardTitle>
             <School className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -103,7 +101,6 @@ export function SchoolsClient({ schools }: SchoolsClientProps) {
         </Card>
       </div>
 
-      {/* Search and Filter */}
       <Card>
         <CardHeader>
           <CardTitle>Escolas Cadastradas</CardTitle>
@@ -152,7 +149,7 @@ export function SchoolsClient({ schools }: SchoolsClientProps) {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Escola</TableHead>
-                    <TableHead>Localização</TableHead>
+                    <TableHead>Localizacao</TableHead>
                     <TableHead>Turmas</TableHead>
                     <TableHead>Cadastrado em</TableHead>
                     <TableHead className="w-[50px]"></TableHead>
