@@ -35,14 +35,27 @@ export default function NewSchoolPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // TODO: Implementar salvamento no banco de dados
-    console.log('Dados da escola:', formData);
+    try {
+      const response = await fetch('/api/schools', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-    // Simular salvamento
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (!response.ok) {
+        throw new Error('Failed to create school');
+      }
 
-    // Redirecionar para a listagem
-    router.push('/dashboard/school');
+      // Redirecionar para a listagem
+      router.push('/dashboard/school');
+      router.refresh();
+    } catch (error) {
+      console.error('Error creating school:', error);
+      alert('Erro ao criar escola. Tente novamente.');
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
