@@ -157,22 +157,40 @@ export function SchoolsClient({ schools }: SchoolsClientProps) {
                 </TableHeader>
                 <TableBody>
                   {schools.map((school) => (
-                    <TableRow key={school.id}>
+                    <TableRow key={school.id} className="cursor-pointer hover:bg-gray-50">
                       <TableCell className="font-medium">
-                        {school.name}
+                        <Link
+                          href={`/dashboard/school/${school.id}/classes`}
+                          className="hover:underline"
+                        >
+                          {school.name}
+                        </Link>
                       </TableCell>
                       <TableCell>
                         {school.city && school.state
                           ? `${school.city}, ${school.state}`
                           : '-'}
                       </TableCell>
-                      <TableCell>{school._count.classes}</TableCell>
+                      <TableCell>
+                        <Link
+                          href={`/dashboard/school/${school.id}/classes`}
+                          className="hover:underline"
+                        >
+                          {school._count.classes}
+                        </Link>
+                      </TableCell>
                       <TableCell>
                         {new Date(school.createdAt).toLocaleDateString('pt-BR')}
                       </TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="h-4 w-4" />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          asChild
+                        >
+                          <Link href={`/dashboard/school/${school.id}/classes`}>
+                            Ver
+                          </Link>
                         </Button>
                       </TableCell>
                     </TableRow>
