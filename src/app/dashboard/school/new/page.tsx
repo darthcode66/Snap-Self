@@ -13,9 +13,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { toastMessages } from '@/lib/toast-messages';
 
 export default function NewSchoolPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -48,12 +51,14 @@ export default function NewSchoolPage() {
         throw new Error('Failed to create school');
       }
 
+      toastMessages.created('Escola', formData.name, toast);
+
       // Redirecionar para a listagem
       router.push('/dashboard/school');
       router.refresh();
     } catch (error) {
       console.error('Error creating school:', error);
-      alert('Erro ao criar escola. Tente novamente.');
+      toastMessages.error('criar', 'escola', toast);
       setIsSubmitting(false);
     }
   };
