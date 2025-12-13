@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Upload, FileUp, Check, X } from 'lucide-react';
+import { ArrowLeft, Upload, FileUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -37,12 +37,21 @@ export function ImportStudentsClient({
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [data, setData] = useState<StudentData[]>([]);
-  const [step, setStep] = useState<'upload' | 'map' | 'preview' | 'importing'>(
+  const [step, setStep] = useState<'upload' | 'encoding' | 'map' | 'preview' | 'importing'>(
     'upload'
   );
   const [nameColumn, setNameColumn] = useState<string>('');
   const [columns, setColumns] = useState<string[]>([]);
   const [isImporting, setIsImporting] = useState(false);
+  const [fileContent, setFileContent] = useState<string>('');
+  const [encoding, setEncoding] = useState<string>('utf-8');
+
+  const encodingOptions = [
+    { value: 'utf-8', label: 'UTF-8 (Padrão)' },
+    { value: 'iso-8859-1', label: 'ISO-8859-1 (Latin-1)' },
+    { value: 'windows-1252', label: 'Windows-1252' },
+    { value: 'utf-16', label: 'UTF-16' },
+  ];
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -71,68 +80,60 @@ export function ImportStudentsClient({
 
   const processFile = (uploadedFile: File) => {
     setFile(uploadedFile);
+    const reader = new FileReader();
 
-    if (uploadedFile.name.endsWith('.csv')) {
-      // Parse CSV
-      Papa.parse(uploadedFile, {
-        header: false,
-        skipEmptyLines: true,
-        complete: (results) => {
-          const rawData = results.data as string[][];
-          if (rawData.length > 0) {
-            setColumns(rawData[0] as string[]);
-            setStep('map');
-          }
-        },
-        error: (error) => {
-          toastMessages.genericError(
-            'Erro ao processar arquivo',
-            error.message,
-            toast
-          );
-        },
-      });
-    } else if (
-      uploadedFile.name.endsWith('.xlsx') ||
-      uploadedFile.name.endsWith('.xls')
-    ) {
-      // For Excel, we'll need xlsx library
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          // Fallback: convert Excel to CSV using a simple approach
-          // In production, you'd use the xlsx library
-          toast({
-            title: 'Usando leitor simples',
-            description:
-              'Para melhor suporte a Excel, salve como CSV no seu software.',
-          });
-          // Re-attempt as CSV
-          Papa.parse(uploadedFile, {
-            header: false,
-            skipEmptyLines: true,
-            complete: (results) => {
-              const rawData = results.data as string[][];
-              if (rawData.length > 0) {
-                setColumns(rawData[0] as string[]);
-                setStep('map');
-              }
-            },
-          });
-        } catch (error) {
-          toastMessages.genericError(
-            'Erro ao processar Excel',
-            'Salve como CSV para melhor compatibilidade',
-            toast
-          );
-        }
-      };
-      reader.readAsArrayBuffer(uploadedFile);
-    }
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      setFileContent(content);
+      // Tentar detectar encoding
+      parseWithEncoding(content, 'utf-8');
+      setStep('encoding');
+    };
+
+    reader.onerror = () => {
+      toastMessages.genericError(
+        'Erro ao ler arquivo',
+        'Não foi possível ler o arquivo',
+        toast
+      );
+    };
+
+    reader.readAsText(uploadedFile, 'utf-8');
   };
 
-  const handleMappingComplete = async () => {
-    if (!nameColumn || !file) {
+  const parseWithEncoding = (content: string, enc: string) => {
+    Papa.parse(content, {
+      header: false,
+      skipEmptyLines: true,
+      complete: (results) => {
+        const rawData = results.data as string[][];
+        if (rawData.length > 0) {
+          const cleanedColumns = (rawData[0] as string[]).map((col) =>
+            String(col).trim().substring(0, 50)
+          );
+          setColumns(cleanedColumns);
+        }
+      },
+    });
+  };
+
+  const handleEncodingChange = (newEncoding: string) => {
+    setEncoding(newEncoding);
+
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      setFileContent(content);
+      parseWithEncoding(content, newEncoding);
+    };
+
+    reader.readAsText(file, newEncoding);
+  };
+
+  const handleMappingComplete = () => {
+    if (!nameColumn) {
       toast({
         title: 'Erro',
         description: 'Selecione a coluna com o nome dos alunos',
@@ -141,13 +142,12 @@ export function ImportStudentsClient({
       return;
     }
 
-    Papa.parse(file, {
+    Papa.parse(fileContent, {
       header: false,
       skipEmptyLines: true,
       complete: (results) => {
         const rawData = results.data as string[][];
         if (rawData.length > 1) {
-          // Skip header row
           const nameColIndex = columns.indexOf(nameColumn);
           const mappedData: StudentData[] = rawData.slice(1).map((row) => ({
             name: String(row[nameColIndex] || '').trim(),
@@ -155,7 +155,6 @@ export function ImportStudentsClient({
             section: classData.section,
           }));
 
-          // Filter out empty names
           const validData = mappedData.filter((s) => s.name.length > 0);
           setData(validData);
           setStep('preview');
@@ -228,7 +227,7 @@ export function ImportStudentsClient({
       <div className="flex gap-4">
         <div
           className={`flex-1 rounded-lg p-4 text-center ${
-            ['upload', 'map', 'preview', 'importing'].indexOf(step) >= 0
+            ['upload', 'encoding', 'map', 'preview', 'importing'].indexOf(step) >= 0
               ? 'bg-blue-100'
               : 'bg-gray-100'
           }`}
@@ -237,12 +236,21 @@ export function ImportStudentsClient({
         </div>
         <div
           className={`flex-1 rounded-lg p-4 text-center ${
+            ['encoding', 'map', 'preview', 'importing'].indexOf(step) >= 0
+              ? 'bg-blue-100'
+              : 'bg-gray-100'
+          }`}
+        >
+          <p className="text-sm font-medium">2. Encoding</p>
+        </div>
+        <div
+          className={`flex-1 rounded-lg p-4 text-center ${
             ['map', 'preview', 'importing'].indexOf(step) >= 0
               ? 'bg-blue-100'
               : 'bg-gray-100'
           }`}
         >
-          <p className="text-sm font-medium">2. Mapear</p>
+          <p className="text-sm font-medium">3. Mapear</p>
         </div>
         <div
           className={`flex-1 rounded-lg p-4 text-center ${
@@ -251,14 +259,7 @@ export function ImportStudentsClient({
               : 'bg-gray-100'
           }`}
         >
-          <p className="text-sm font-medium">3. Preview</p>
-        </div>
-        <div
-          className={`flex-1 rounded-lg p-4 text-center ${
-            step === 'importing' ? 'bg-blue-100' : 'bg-gray-100'
-          }`}
-        >
-          <p className="text-sm font-medium">4. Importar</p>
+          <p className="text-sm font-medium">4. Preview</p>
         </div>
       </div>
 
@@ -291,7 +292,7 @@ export function ImportStudentsClient({
               </p>
               <input
                 type="file"
-                accept=".csv,.xlsx,.xls"
+                accept=".csv,.xlsx,.xls,.txt"
                 onChange={handleFileInput}
                 className="hidden"
                 id="file-input"
@@ -304,8 +305,71 @@ export function ImportStudentsClient({
             </div>
 
             <p className="mt-6 text-xs text-gray-500">
-              Formatos suportados: CSV, Excel (.xlsx, .xls)
+              Formatos suportados: CSV, Excel (.xlsx, .xls), TXT
             </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Encoding Step */}
+      {step === 'encoding' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Selecionar Encoding</CardTitle>
+            <CardDescription>
+              Se os nomes aparecerem incorretos, mude o encoding do arquivo
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <label className="text-sm font-medium leading-none">
+                Encoding do arquivo
+              </label>
+              <select
+                value={encoding}
+                onChange={(e) => handleEncodingChange(e.target.value)}
+                className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              >
+                {encodingOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="rounded-lg bg-gray-50 p-4">
+              <p className="text-sm font-medium text-gray-900 mb-2">
+                Preview das colunas:
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {columns.slice(0, 5).map((col, idx) => (
+                  <span
+                    key={idx}
+                    className="rounded-full bg-gray-200 px-3 py-1 text-sm truncate"
+                  >
+                    {col || `(vazio)`}
+                  </span>
+                ))}
+                {columns.length > 5 && (
+                  <span className="rounded-full bg-gray-200 px-3 py-1 text-sm">
+                    +{columns.length - 5} mais
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-4">
+              <Button
+                variant="outline"
+                onClick={() => setStep('upload')}
+              >
+                Voltar
+              </Button>
+              <Button onClick={() => setStep('map')}>
+                Continuar
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -332,7 +396,7 @@ export function ImportStudentsClient({
                 <option value="">Selecionar coluna</option>
                 {columns.map((col, idx) => (
                   <option key={idx} value={col}>
-                    {col}
+                    {col || `(coluna vazia)`}
                   </option>
                 ))}
               </select>
@@ -348,7 +412,7 @@ export function ImportStudentsClient({
                     key={idx}
                     className="rounded-full bg-gray-200 px-3 py-1 text-sm"
                   >
-                    {col}
+                    {col || `(vazio)`}
                   </span>
                 ))}
               </div>
@@ -357,7 +421,7 @@ export function ImportStudentsClient({
             <div className="flex justify-end gap-4">
               <Button
                 variant="outline"
-                onClick={() => setStep('upload')}
+                onClick={() => setStep('encoding')}
               >
                 Voltar
               </Button>
