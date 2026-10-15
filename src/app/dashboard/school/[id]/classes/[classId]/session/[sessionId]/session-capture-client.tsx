@@ -382,7 +382,7 @@ export function SessionCaptureClient({
             </CardHeader>
             <CardContent className="space-y-4 pt-6">
               {/* Photo Preview Area */}
-              <div className="aspect-square rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+              <div className="aspect-square rounded-lg bg-linear-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                 <div className="text-center">
                   <Camera className="mx-auto h-16 w-16 text-gray-400" />
                   <p className="mt-4 text-gray-600">

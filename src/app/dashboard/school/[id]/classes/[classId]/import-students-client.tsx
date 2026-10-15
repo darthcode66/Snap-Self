@@ -328,7 +328,7 @@ export function ImportStudentsClient({
               <select
                 value={encoding}
                 onChange={(e) => handleEncodingChange(e.target.value)}
-                className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2"
               >
                 {encodingOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -391,7 +391,7 @@ export function ImportStudentsClient({
               <select
                 value={nameColumn}
                 onChange={(e) => setNameColumn(e.target.value)}
-                className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2"
               >
                 <option value="">Selecionar coluna</option>
                 {columns.map((col, idx) => (

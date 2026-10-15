@@ -140,7 +140,7 @@ export function SessionSetupClient({
                 value={photoPrefix}
                 onChange={(e) => setPhotoPrefix(e.target.value)}
                 placeholder="Ex: SAO_JOAO_1A_2025"
-                className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2"
               />
               <p className="mt-1 text-xs text-gray-500">
                 Usado no nome dos arquivos: {photoPrefix}_001.jpg
@@ -156,7 +156,7 @@ export function SessionSetupClient({
                 value={startNumber}
                 onChange={(e) => setStartNumber(Math.max(1, parseInt(e.target.value) || 1))}
                 min="1"
-                className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2"
               />
               <p className="mt-1 text-xs text-gray-500">
                 Primeira foto será numerada como: {String(startNumber).padStart(3, '0')}
@@ -170,7 +170,7 @@ export function SessionSetupClient({
               <select
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value as 'ALPHABETICAL' | 'REGISTRATION_NUMBER')}
-                className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2"
               >
                 <option value="ALPHABETICAL">Alfabética</option>
                 <option value="REGISTRATION_NUMBER">Matrícula</option>

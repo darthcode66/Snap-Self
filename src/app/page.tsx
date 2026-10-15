@@ -12,7 +12,7 @@ export default function HomePage() {
 
         <h1 className="mb-6 max-w-4xl text-5xl font-bold leading-tight tracking-tight md:text-6xl lg:text-7xl">
           Organize, Entregue e Receba com{' '}
-          <span className="bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
+          <span className="bg-linear-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent">
             Inteligência Artificial
           </span>
         </h1>
