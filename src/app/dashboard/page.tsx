@@ -139,7 +139,7 @@ function QuickActionButton({
       href={href}
       className="flex items-start gap-4 rounded-lg border bg-gray-50 p-4 transition-all hover:border-primary-300 hover:bg-primary-50"
     >
-      <div className="rounded-lg bg-white p-2 shadow-sm">{icon}</div>
+      <div className="rounded-lg bg-white p-2 shadow-xs">{icon}</div>
       <div>
         <h4 className="font-semibold text-gray-900">{title}</h4>
         <p className="text-sm text-gray-600">{description}</p>
