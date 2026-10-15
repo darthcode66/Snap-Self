@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { School, Class, PhotoSession } from '@prisma/client';
+import type { School, Class, PhotoSession } from '@/generated/prisma/client';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 

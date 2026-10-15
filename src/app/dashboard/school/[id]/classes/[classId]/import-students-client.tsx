@@ -15,7 +15,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { toastMessages } from '@/lib/toast-messages';
 import Papa from 'papaparse';
-import { School, Class } from '@prisma/client';
+import type { School, Class } from '@/generated/prisma/client';
 
 interface StudentData {
   name: string;
