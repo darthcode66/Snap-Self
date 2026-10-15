@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { toastMessages } from '@/lib/toast-messages';
-import { School, Class, Student, PhotoSession } from '@prisma/client';
+import type { School, Class, Student, PhotoSession } from '@/generated/prisma/client';
 
 interface SessionCaptureClientProps {
   school: School;

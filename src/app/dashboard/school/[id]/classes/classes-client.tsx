@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { School } from '@prisma/client';
+import type { School } from '@/generated/prisma/client';
 
 type ClassWithCount = {
   id: string;

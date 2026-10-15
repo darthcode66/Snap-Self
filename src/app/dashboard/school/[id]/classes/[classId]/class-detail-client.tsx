@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { School, Class, Student } from '@prisma/client';
+import type { School, Class, Student } from '@/generated/prisma/client';
 
 interface ClassDetailClientProps {
   school: School;

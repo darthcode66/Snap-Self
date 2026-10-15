@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { PhotoSession, Class, School } from '@prisma/client';
+import type { PhotoSession, Class, School } from '@/generated/prisma/client';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 

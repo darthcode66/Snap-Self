@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { toastMessages } from '@/lib/toast-messages';
-import { School, Class, Student } from '@prisma/client';
+import type { School, Class, Student } from '@/generated/prisma/client';
 
 interface SessionSetupClientProps {
   school: School;
